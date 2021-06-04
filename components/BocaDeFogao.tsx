@@ -21,14 +21,15 @@ export default function BocaDoFogao(props: BocaDoFogaoProps) {
         case EstadoDaBoca.INATIVADO:
             borderColor = '#010100';
             break;
+        case EstadoDaBoca.TOCANDO:
         case EstadoDaBoca.RODANDO:
             borderColor = '#33c7cc';
             break;
-        case EstadoDaBoca.PAUSADO:
+        case EstadoDaBoca.PAUSADO:        
             borderColor = '#EE1533';
             break;
     }
-    let color: string = props.selecionado ? '#33cc66' : 'white';
+    let color: string = props.model.estado == EstadoDaBoca.TOCANDO ? '#EE1533' : props.selecionado ? '#33cc66' : 'white';
     
     return (
         <TouchableOpacity

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Alert, Modal, Pressable, StyleSheet } from "react-native";
+import { Alert, AppState, AppStateStatus, Modal, Pressable, StyleSheet } from "react-native";
 import { TextInput, TouchableOpacity } from "react-native-gesture-handler";
 import BocaDoFogao from "../components/BocaDeFogao";
 
@@ -9,8 +9,11 @@ import BocaDeFogaoModel, { EstadoDaBoca } from "../models/BocaDeFogaoModel";
 import { Entypo } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import RelogioModel from "../models/RelogioModel";
+import { Audio } from 'expo-av';
 
 export default function Home() {
+    const [sound, setSound] = React.useState<Audio.Sound>();
+    const appState = React.useRef(AppState.currentState);
     const [minutos, setMinutos] = React.useState(10);
     const [segundos, setSegundos] = React.useState(0);
     const [modalVisible, setModalVisible] = React.useState(false);
@@ -24,34 +27,103 @@ export default function Home() {
     ]);
 
     React.useEffect(() => {
+        AppState.addEventListener("change", _handleAppStateChange);
+
+        carregarSom();
+
         const motor = setInterval(function () {
             setBocas(
                 bocas.map((el) => {
                     if (el.isRodando()) {
-                        el.milissegundosPassados += 100;
+                        el.milissegundosPassados += 1000;
                         if (el.milissegundosPassados >= 1000) {
                             el.milissegundosPassados = 0;
                             el.relogioAtual.passarTempo(0, -1);
+                            el.ultimoUpdate = new Date().getTime();
+                            if (el.acabou()) {
+                                el.estado = EstadoDaBoca.TOCANDO;
+                            }
                         }
                     }
                     return el;
                 })
             );
-        }, 100);
+        }, 1000);
         return () => {
             clearInterval(motor);
+            AppState.removeEventListener("change", _handleAppStateChange);
+            sound?.stopAsync();
+            sound?.unloadAsync();
         };
     }, []);
+
+    React.useEffect(() => {
+        const bocasTocando: Array<BocaDeFogaoModel> = bocas.filter((el) => {
+            return el.estado == EstadoDaBoca.TOCANDO;
+        })
+
+        try {
+            if (bocasTocando.length > 0) {
+                sound?.playAsync();
+            } else {
+                sound?.stopAsync();
+            }
+        } catch (e) {
+            // An error occurred!
+        }
+    }, [bocas]);
+
+    async function carregarSom() {
+        try {
+            const audio: any = await Audio.Sound.createAsync(
+                require('../assets/alarme.wav'),
+                {isLooping: true}
+            );
+            
+            setSound(audio.sound);
+        } catch (error) {
+            Alert.alert(
+                "Ops!",
+                "Ocorreu um erro ao carregar o som de alarme.",
+                [
+                    { text: "OK" }
+                ],
+                { cancelable: true }
+            );
+        }
+    }
+
+    const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+        if (appState.current.match(/inactive|background/) && nextAppState === "active") {
+            setBocas(
+                bocas.map((el) => {
+                    if (el.isRodando()) {
+                        el.ajustarRelogio();
+                    }
+                    return el;
+                })
+            );
+        }
+
+        appState.current = nextAppState;
+    };
 
     function playPause(): void {
         let index = 0;
         setBocas(
             bocas.map((el): BocaDeFogaoModel => {
                 if (index == bocaSelecionada) {
-                    if (el.estado == EstadoDaBoca.RODANDO) {
-                        el.estado = EstadoDaBoca.PAUSADO;
-                    } else {
-                        el.estado = EstadoDaBoca.RODANDO;
+                    switch (el.estado) {
+                        case EstadoDaBoca.RODANDO:
+                            el.estado = EstadoDaBoca.PAUSADO;
+                            break;
+                        case EstadoDaBoca.INATIVADO:
+                        case EstadoDaBoca.PAUSADO:
+                            el.estado = EstadoDaBoca.RODANDO;
+                            break;
+                        case EstadoDaBoca.TOCANDO:
+                            stop(bocaSelecionada);
+                            break;
                     }
                 }
                 index++;
@@ -60,7 +132,7 @@ export default function Home() {
         );
     }
 
-    function stop(): void {
+    function stop(boca: number): void {
         let index = 0;
         setBocas(
             bocas.map((el): BocaDeFogaoModel => {
@@ -76,7 +148,7 @@ export default function Home() {
     }
 
     function abrirModal(): void {
-        setModalVisible(!modalVisible)
+        setModalVisible(!modalVisible);
         let index = 0;
         setBocas(
             bocas.map((el): BocaDeFogaoModel => {
@@ -91,12 +163,16 @@ export default function Home() {
     }
 
     function fecharModal(): void {
-        setModalVisible(!modalVisible)
+        setModalVisible(!modalVisible);
         let index = 0;
         setBocas(
             bocas.map((el): BocaDeFogaoModel => {
                 if (index == bocaSelecionada) {
-                    el.relogioPadrao = new RelogioModel(minutos, segundos);
+                    if (minutos == 0 && segundos == 0) {
+                        el.relogioPadrao = new RelogioModel(1, segundos);
+                    } else {
+                        el.relogioPadrao = new RelogioModel(minutos, segundos);
+                    }
                     el.relogioAtual.minutos = el.relogioPadrao.minutos;
                     el.relogioAtual.segundos = el.relogioPadrao.segundos;
                     el.estado = EstadoDaBoca.INATIVADO;
@@ -105,6 +181,13 @@ export default function Home() {
                 return el;
             })
         );
+    }
+
+    function handleBocaClick(boca: number) {
+        if (bocas[boca].estado == EstadoDaBoca.TOCANDO) {
+            stop(boca);
+        }
+        setBocaSelecionada(boca);
     }
 
     return (
@@ -120,36 +203,71 @@ export default function Home() {
                         }}
                         style={styles.modalView}
                     >
-                        <Text style={styles.modalText}>Minutos:</Text>
+                        <Text style={[styles.modalText, { backgroundColor: "rgba(255,0,0,0)", marginLeft: 0 }]}>
+                            Minutos:
+                        </Text>
                         <View
                             style={[styles.container, { backgroundColor: "rgba(255,255,255,0)", flexDirection: "row" }]}
                         >
                             <Pressable
-                                style={[styles.button]}
-                                onPress={() => {
-                                    setMinutos(minutos - 1);
-                                }}
+                                style={[styles.button, { paddingHorizontal: 25 }]}
+                                onPress={() => setMinutos(minutos <= 9 ? 0 : minutos - 10)}
+                                onLongPress={() => setMinutos(0)}
                             >
-                                <Entypo name="minus" size={50} color="#993D63" />
+                                <Entypo name="controller-jump-to-start" size={30} color="#993D63" />
                             </Pressable>
-                            <Text style={[styles.modalText, { marginHorizontal: 10 }]}>{("00" + minutos).slice(-2)}</Text>
+                            <Pressable
+                                style={[styles.button]}
+                                onPress={() => setMinutos(minutos <= 0 ? 0 : minutos - 1)}
+                                onLongPress={() => setMinutos(0)}
+                            >
+                                <Entypo name="controller-fast-backward" size={30} color="#993D63" />
+                            </Pressable>
+                            <Text style={[styles.modalText, { paddingHorizontal: 25 }]}>
+                                {(minutos < 10 ? 0 : "") + minutos.toString()}
+                            </Text>
                             <Pressable style={[styles.button]} onPress={() => setMinutos(minutos + 1)}>
-                                <Entypo name="plus" size={50} color="#993D63" />
+                                <Entypo name="controller-fast-forward" size={30} color="#993D63" />
+                            </Pressable>
+                            <Pressable
+                                style={[styles.button, { paddingHorizontal: 25 }]}
+                                onPress={() => setMinutos(minutos + 10)}
+                            >
+                                <Entypo name="controller-next" size={30} color="#993D63" />
                             </Pressable>
                         </View>
-                        <Text style={styles.modalText}>Segundos:</Text>
-                        <View
-                            style={[
-                                styles.container,
-                                { backgroundColor: "rgba(255,255,255,0.5", flexDirection: "row" },
-                            ]}
-                        >
-                            <Pressable style={[styles.button]} onPress={() => setSegundos(segundos - 1)}>
-                                <Entypo name="minus" size={50} color="#993D63" />
+                        <Text style={[styles.modalText, { backgroundColor: "rgba(255,0,0,0)", marginLeft: 0 }]}>
+                            Segundos:
+                        </Text>
+                        <View style={[styles.container, { backgroundColor: "rgba(255,0,0,0)", flexDirection: "row" }]}>
+                            <Pressable
+                                style={[styles.button, { paddingHorizontal: 25 }]}
+                                onPress={() => setSegundos(segundos <= 9 ? 50 : segundos - 10)}
+                                onLongPress={() => setSegundos(0)}
+                            >
+                                <Entypo name="controller-jump-to-start" size={30} color="#993D63" />
                             </Pressable>
-                            <Text style={[styles.modalText, { marginHorizontal: 10 }]}>{("00" + segundos).slice(-2)}</Text>
-                            <Pressable style={[styles.button]} onPress={() => setSegundos(segundos + 1)}>
-                                <Entypo name="plus" size={50} color="#993D63" />
+                            <Pressable
+                                style={[styles.button]}
+                                onPress={() => setSegundos(segundos <= 0 ? 59 : segundos - 1)}
+                                onLongPress={() => setSegundos(0)}
+                            >
+                                <Entypo name="controller-fast-backward" size={30} color="#993D63" />
+                            </Pressable>
+                            <Text style={[styles.modalText, { paddingHorizontal: 25 }]}>
+                                {("00" + segundos).slice(-2)}
+                            </Text>
+                            <Pressable
+                                style={[styles.button]}
+                                onPress={() => setSegundos(segundos >= 59 ? 0 : segundos + 1)}
+                            >
+                                <Entypo name="controller-fast-forward" size={30} color="#993D63" />
+                            </Pressable>
+                            <Pressable
+                                style={[styles.button, { paddingHorizontal: 25 }]}
+                                onPress={() => setSegundos(segundos >= 50 ? 0 : segundos + 10)}
+                            >
+                                <Entypo name="controller-next" size={30} color="#993D63" />
                             </Pressable>
                         </View>
                         <Pressable style={[styles.buttonClose]} onPress={fecharModal}>
@@ -161,19 +279,19 @@ export default function Home() {
             <View style={[styles.container, { flex: 9, height: "100%" }]}>
                 <View style={styles.linhaFogao} lightColor="#eee" darkColor="#F7E2EE">
                     <BocaDoFogao
-                        onPress={() => setBocaSelecionada(0)}
+                        onPress={() => handleBocaClick(0)}
                         selecionado={bocaSelecionada == 0}
                         model={bocas[0]}
                     />
                     <BocaDoFogao
-                        onPress={() => setBocaSelecionada(1)}
+                        onPress={() => handleBocaClick(1)}
                         selecionado={bocaSelecionada == 1}
                         model={bocas[1]}
                     />
                 </View>
                 <View style={styles.linhaFogao} lightColor="#eee" darkColor="#F7E2EE">
                     <BocaDoFogao
-                        onPress={() => setBocaSelecionada(2)}
+                        onPress={() => handleBocaClick(2)}
                         selecionado={bocaSelecionada == 2}
                         model={bocas[2]}
                         grande
@@ -181,12 +299,12 @@ export default function Home() {
                 </View>
                 <View style={styles.linhaFogao} lightColor="#eee" darkColor="#F7E2EE">
                     <BocaDoFogao
-                        onPress={() => setBocaSelecionada(3)}
+                        onPress={() => handleBocaClick(3)}
                         selecionado={bocaSelecionada == 3}
                         model={bocas[3]}
                     />
                     <BocaDoFogao
-                        onPress={() => setBocaSelecionada(4)}
+                        onPress={() => handleBocaClick(4)}
                         selecionado={bocaSelecionada == 4}
                         model={bocas[4]}
                     />
@@ -201,13 +319,14 @@ export default function Home() {
                 darkColor="#41304C"
             >
                 <TouchableOpacity style={[styles.button]} onPress={playPause}>
-                    {bocas[bocaSelecionada].isRodando() ? (
+                    {bocas[bocaSelecionada].estado == EstadoDaBoca.RODANDO ||
+                    bocas[bocaSelecionada].estado == EstadoDaBoca.TOCANDO ? (
                         <Entypo name="controller-paus" size={50} color="#993D63" />
                     ) : (
                         <Entypo name="controller-play" size={50} color="#993D63" />
                     )}
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.button]} onPress={stop}>
+                <TouchableOpacity style={[styles.button]} onPress={() => stop(bocaSelecionada)}>
                     <Entypo name="controller-stop" size={50} color="#993D63" />
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.button]} onPress={abrirModal}>
@@ -244,7 +363,7 @@ const styles = StyleSheet.create({
         backgroundColor: "rgba(0, 0, 0, 0)",
         justifyContent: "center",
         alignItems: "center",
-        marginVertical: 5,
+        paddingVertical: 5,
     },
     buttonText: {
         color: "white",
@@ -272,9 +391,9 @@ const styles = StyleSheet.create({
         height: 40,
         width: 120,
         borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: "#2196F3"
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#2196F3",
     },
     centeredView: {
         flex: 1,

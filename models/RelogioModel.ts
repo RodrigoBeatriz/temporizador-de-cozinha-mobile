@@ -23,13 +23,21 @@ export default class RelogioModel {
             this.minutos--;
             this.segundos = 59;
         }
+        if (this.acabou()) {
+            this.minutos = 0;
+            this.segundos = 0;
+        }
     }
 
     toString(): string {
-        return ("00" + this.minutos).slice(-2) + ":" + ("00" + this.segundos).slice(-2);
+        return `${this.minutos < 10 ? 0 : ""}${this.minutos}:${this.segundos < 10 ? 0 : ""}${this.segundos}`;
     }
 
     getTime(): number {
         return (this.segundos * 1000) + (this.minutos * 60 * 1000)
+    }
+
+    acabou(): boolean {
+        return (this.minutos <= 0 && this.segundos <= 0);
     }
 }
