@@ -10,6 +10,7 @@ import { Entypo } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import RelogioModel from "../models/RelogioModel";
 import { Audio } from 'expo-av';
+import { useKeepAwake } from 'expo-keep-awake';
 
 export default function Home() {
     const [sound, setSound] = React.useState<Audio.Sound>();
@@ -26,6 +27,7 @@ export default function Home() {
         new BocaDeFogaoModel(10, 0),
     ]);
 
+    useKeepAwake();
     React.useEffect(() => {
         AppState.addEventListener("change", _handleAppStateChange);
 
