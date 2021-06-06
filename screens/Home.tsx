@@ -11,6 +11,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import RelogioModel from "../models/RelogioModel";
 import { Audio } from 'expo-av';
 import { useKeepAwake } from 'expo-keep-awake';
+import FlashMessage, { showMessage } from "react-native-flash-message";
 
 export default function Home() {
     const [sound, setSound] = React.useState<Audio.Sound>();
@@ -26,6 +27,8 @@ export default function Home() {
         new BocaDeFogaoModel(5, 0),
         new BocaDeFogaoModel(10, 0),
     ]);
+    const [somTocando, setSomTocando] = React.useState(false);
+    const [avisoExibido, setAvisoExibido] = React.useState(false);
 
     useKeepAwake();
     React.useEffect(() => {
@@ -64,11 +67,32 @@ export default function Home() {
             return el.estado == EstadoDaBoca.TOCANDO;
         })
 
+        const bocasRodando: Array<BocaDeFogaoModel> = bocas.filter((el) => {
+            return el.isRodando();
+        })
+
+        if (bocasRodando.length > 0 && !avisoExibido) {
+            showMessage({
+                message: "Aviso:",
+                description: "Mantenha-se no app para que possamos te avisar quando o relógio tocar",
+                type: "warning",
+                backgroundColor: "#F6EFEF",
+                color: "#000100",
+                duration: 4500,
+                floating: true,
+                hideOnPress: true,
+                icon: "warning",
+            });
+            setAvisoExibido(true);
+        }
+
         try {
-            if (bocasTocando.length > 0) {
+            if (bocasTocando.length > 0 && somTocando) {
                 sound?.playAsync();
-            } else {
+                setSomTocando(true);
+            } else if (!somTocando) {
                 sound?.stopAsync();
+                setSomTocando(false);
             }
         } catch (e) {
             // An error occurred!
@@ -335,6 +359,7 @@ export default function Home() {
                     <MaterialIcons name="timer" size={50} color="#993D63" />
                 </TouchableOpacity>
             </View>
+            <FlashMessage position="bottom" />
         </View>
     );
 }
