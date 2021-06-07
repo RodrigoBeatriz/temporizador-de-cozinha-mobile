@@ -173,12 +173,12 @@ export default function Home() {
         );
     }
 
-    function abrirModal(): void {
+    function abrirModal(boca: number): void {
         setModalVisible(!modalVisible);
         let index = 0;
         setBocas(
             bocas.map((el): BocaDeFogaoModel => {
-                if (index == bocaSelecionada) {
+                if (index == boca) {
                     setMinutos(el.relogioPadrao.minutos);
                     setSegundos(el.relogioPadrao.segundos);
                 }
@@ -186,6 +186,7 @@ export default function Home() {
                 return el;
             })
         );
+        setBocaSelecionada(boca);
     }
 
     function fecharModal(): void {
@@ -306,11 +307,13 @@ export default function Home() {
                 <View style={styles.linhaFogao} lightColor="#eee" darkColor="#F7E2EE">
                     <BocaDoFogao
                         onPress={() => handleBocaClick(0)}
+                        onLongPress={() => abrirModal(0)}
                         selecionado={bocaSelecionada == 0}
                         model={bocas[0]}
                     />
                     <BocaDoFogao
                         onPress={() => handleBocaClick(1)}
+                        onLongPress={() => abrirModal(1)}
                         selecionado={bocaSelecionada == 1}
                         model={bocas[1]}
                     />
@@ -318,6 +321,7 @@ export default function Home() {
                 <View style={styles.linhaFogao} lightColor="#eee" darkColor="#F7E2EE">
                     <BocaDoFogao
                         onPress={() => handleBocaClick(2)}
+                        onLongPress={() => abrirModal(2)}
                         selecionado={bocaSelecionada == 2}
                         model={bocas[2]}
                         grande
@@ -326,11 +330,13 @@ export default function Home() {
                 <View style={styles.linhaFogao} lightColor="#eee" darkColor="#F7E2EE">
                     <BocaDoFogao
                         onPress={() => handleBocaClick(3)}
+                        onLongPress={() => abrirModal(3)}
                         selecionado={bocaSelecionada == 3}
                         model={bocas[3]}
                     />
                     <BocaDoFogao
                         onPress={() => handleBocaClick(4)}
+                        onLongPress={() => abrirModal(4)}
                         selecionado={bocaSelecionada == 4}
                         model={bocas[4]}
                     />
@@ -355,7 +361,7 @@ export default function Home() {
                 <TouchableOpacity style={[styles.button]} onPress={() => stop(bocaSelecionada)}>
                     <Entypo name="controller-stop" size={50} color="#993D63" />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.button]} onPress={abrirModal}>
+                <TouchableOpacity style={[styles.button]} onPress={() => abrirModal(bocaSelecionada)}>
                     <MaterialIcons name="timer" size={50} color="#993D63" />
                 </TouchableOpacity>
             </View>

@@ -11,6 +11,7 @@ interface BocaDoFogaoProps {
     selecionado?: boolean,
     model: BocaDeFogaoModel,
     onPress: () => void,
+    onLongPress: () => void,
 }
 export default function BocaDoFogao(props: BocaDoFogaoProps) {
     let tamanho: number = props.grande ? 200 : 150;
@@ -35,6 +36,7 @@ export default function BocaDoFogao(props: BocaDoFogaoProps) {
         <TouchableOpacity
             style={[styles.button, {width, height, borderColor}]}
             onPress={props.onPress}
+            onLongPress={props.onLongPress}
         >
             <Text style={[styles.buttonText, {color}]}>{props.model.relogioAtual.toString()}</Text>
         </TouchableOpacity>
