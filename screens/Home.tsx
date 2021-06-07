@@ -185,7 +185,7 @@ export default function Home() {
         let index = 0;
         setBocas(
             bocas.map((el): BocaDeFogaoModel => {
-                if (index == bocaSelecionada) {
+                if (index == boca) {
                     el.relogioAtual.minutos = el.relogioPadrao.minutos;
                     el.relogioAtual.segundos = el.relogioPadrao.segundos;
                     el.estado = EstadoDaBoca.INATIVADO;
