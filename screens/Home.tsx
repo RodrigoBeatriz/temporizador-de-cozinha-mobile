@@ -9,9 +9,19 @@ import BocaDeFogaoModel, { EstadoDaBoca } from "../models/BocaDeFogaoModel";
 import { Entypo } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import RelogioModel from "../models/RelogioModel";
-import { Audio } from 'expo-av';
-import { useKeepAwake } from 'expo-keep-awake';
+import { Audio } from "expo-av";
+import { useKeepAwake } from "expo-keep-awake";
 import FlashMessage, { showMessage } from "react-native-flash-message";
+import * as Notifications from "expo-notifications";
+
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        priority: Notifications.AndroidNotificationPriority.HIGH,
+    }),
+});
 
 export default function Home() {
     const [sound, setSound] = React.useState<Audio.Sound>();
@@ -29,6 +39,7 @@ export default function Home() {
     ]);
     const [somTocando, setSomTocando] = React.useState(false);
     const [avisoExibido, setAvisoExibido] = React.useState(false);
+    const [motorLigado, setMotorLigado] = React.useState(true);
 
     useKeepAwake();
     React.useEffect(() => {
@@ -37,22 +48,24 @@ export default function Home() {
         carregarSom();
 
         const motor = setInterval(function () {
-            setBocas(
-                bocas.map((el) => {
-                    if (el.isRodando()) {
-                        el.milissegundosPassados += 1000;
-                        if (el.milissegundosPassados >= 1000) {
-                            el.milissegundosPassados = 0;
-                            el.relogioAtual.passarTempo(0, -1);
-                            el.ultimoUpdate = new Date().getTime();
-                            if (el.acabou()) {
-                                el.estado = EstadoDaBoca.TOCANDO;
+            if (motorLigado) {
+                setBocas(
+                    bocas.map((el) => {
+                        if (el.isRodando()) {
+                            el.milissegundosPassados += 1000;
+                            if (el.milissegundosPassados >= 1000) {
+                                el.milissegundosPassados = 0;
+                                el.relogioAtual.passarTempo(0, -1);
+                                el.ultimoUpdate = new Date().getTime();
+                                if (el.acabou()) {
+                                    el.estado = EstadoDaBoca.TOCANDO;
+                                }
                             }
                         }
-                    }
-                    return el;
-                })
-            );
+                        return el;
+                    })
+                );
+            }
         }, 1000);
         return () => {
             clearInterval(motor);
@@ -65,20 +78,18 @@ export default function Home() {
     React.useEffect(() => {
         const bocasTocando: Array<BocaDeFogaoModel> = bocas.filter((el) => {
             return el.estado == EstadoDaBoca.TOCANDO;
-        })
+        });
 
-        const bocasRodando: Array<BocaDeFogaoModel> = bocas.filter((el) => {
-            return el.isRodando();
-        })
+        const bocasRodando: Array<BocaDeFogaoModel> = getBocasRodando();
 
         if (bocasRodando.length > 0 && !avisoExibido) {
             showMessage({
                 message: "Aviso:",
-                description: "Mantenha-se no app para que possamos te avisar quando o relógio tocar",
+                description: `Mantenha-se no app para que possamos te avisar quando o relógio tocar, nós enviaremos uma notificação caso não esteja presente`,
                 type: "warning",
                 backgroundColor: "#F6EFEF",
                 color: "#000100",
-                duration: 4500,
+                duration: 7000,
                 floating: true,
                 hideOnPress: true,
                 icon: "warning",
@@ -87,10 +98,10 @@ export default function Home() {
         }
 
         try {
-            if (bocasTocando.length > 0 && somTocando) {
+            if (bocasTocando.length > 0 && !somTocando) {
                 sound?.playAsync();
                 setSomTocando(true);
-            } else if (!somTocando) {
+            } else if (somTocando) {
                 sound?.stopAsync();
                 setSomTocando(false);
             }
@@ -101,21 +112,11 @@ export default function Home() {
 
     async function carregarSom() {
         try {
-            const audio: any = await Audio.Sound.createAsync(
-                require('../assets/alarme.wav'),
-                {isLooping: true}
-            );
-            
+            const audio: any = await Audio.Sound.createAsync(require("../assets/alarme.wav"), { isLooping: true });
+
             setSound(audio.sound);
         } catch (error) {
-            Alert.alert(
-                "Ops!",
-                "Ocorreu um erro ao carregar o som de alarme.",
-                [
-                    { text: "OK" }
-                ],
-                { cancelable: true }
-            );
+            Alert.alert("Ops!", "Ocorreu um erro ao carregar o som de alarme.", [{ text: "OK" }], { cancelable: true });
         }
     }
 
@@ -129,10 +130,32 @@ export default function Home() {
                     return el;
                 })
             );
+            Notifications.cancelAllScheduledNotificationsAsync();
+            Notifications.dismissAllNotificationsAsync();
+            setMotorLigado(true);
+        } else {
+            setMotorLigado(false);
+            getBocasRodando().map((el) => {
+                Notifications.scheduleNotificationAsync({
+                    content: {
+                        title: "O Tempo Acabou!",
+                        body: "Uma de suas bocas está tocando",
+                    },
+                    trigger: {
+                        seconds: el.relogioAtual.getTime() / 1000,
+                    },
+                });
+            });
         }
 
         appState.current = nextAppState;
     };
+
+    function getBocasRodando(): Array<BocaDeFogaoModel> {
+        return bocas.filter((el) => {
+            return el.isRodando();
+        });
+    }
 
     function playPause(): void {
         let index = 0;
@@ -237,7 +260,7 @@ export default function Home() {
                             style={[styles.container, { backgroundColor: "rgba(255,255,255,0)", flexDirection: "row" }]}
                         >
                             <Pressable
-                                style={[styles.button, { paddingHorizontal: 25 }]}
+                                style={[styles.button, { paddingHorizontal: 30 }]}
                                 onPress={() => setMinutos(minutos <= 9 ? 0 : minutos - 10)}
                                 onLongPress={() => setMinutos(0)}
                             >
@@ -250,14 +273,14 @@ export default function Home() {
                             >
                                 <Entypo name="controller-fast-backward" size={30} color="#993D63" />
                             </Pressable>
-                            <Text style={[styles.modalText, { paddingHorizontal: 25 }]}>
+                            <Text style={[styles.modalText, { paddingHorizontal: 30 }]}>
                                 {(minutos < 10 ? 0 : "") + minutos.toString()}
                             </Text>
                             <Pressable style={[styles.button]} onPress={() => setMinutos(minutos + 1)}>
                                 <Entypo name="controller-fast-forward" size={30} color="#993D63" />
                             </Pressable>
                             <Pressable
-                                style={[styles.button, { paddingHorizontal: 25 }]}
+                                style={[styles.button, { paddingHorizontal: 30 }]}
                                 onPress={() => setMinutos(minutos + 10)}
                             >
                                 <Entypo name="controller-next" size={30} color="#993D63" />
@@ -268,7 +291,7 @@ export default function Home() {
                         </Text>
                         <View style={[styles.container, { backgroundColor: "rgba(255,0,0,0)", flexDirection: "row" }]}>
                             <Pressable
-                                style={[styles.button, { paddingHorizontal: 25 }]}
+                                style={[styles.button, { paddingHorizontal: 30 }]}
                                 onPress={() => setSegundos(segundos <= 9 ? 50 : segundos - 10)}
                                 onLongPress={() => setSegundos(0)}
                             >
@@ -281,7 +304,7 @@ export default function Home() {
                             >
                                 <Entypo name="controller-fast-backward" size={30} color="#993D63" />
                             </Pressable>
-                            <Text style={[styles.modalText, { paddingHorizontal: 25 }]}>
+                            <Text style={[styles.modalText, { paddingHorizontal: 30 }]}>
                                 {("00" + segundos).slice(-2)}
                             </Text>
                             <Pressable
@@ -291,7 +314,7 @@ export default function Home() {
                                 <Entypo name="controller-fast-forward" size={30} color="#993D63" />
                             </Pressable>
                             <Pressable
-                                style={[styles.button, { paddingHorizontal: 25 }]}
+                                style={[styles.button, { paddingHorizontal: 30 }]}
                                 onPress={() => setSegundos(segundos >= 50 ? 0 : segundos + 10)}
                             >
                                 <Entypo name="controller-next" size={30} color="#993D63" />

@@ -29,16 +29,18 @@ export default class BocaDeFogaoModel {
 
     ajustarRelogio(): void {
         const agora = new Date().getTime();
-        const tempoPassado = agora - this.ultimoUpdate;        
+        const tempoPassado = agora - this.ultimoUpdate;    
+            
         let segundos = 0;
         let minutos = 0;
         if (agora < this.getEndTime()) {
             segundos = Math.round(tempoPassado / 1000);
             minutos = Math.floor(segundos / 60);
             segundos = segundos % 60;
+            this.relogioAtual.passarTempo(minutos * -1, segundos * -1);
+        } else {
+            this.relogioAtual.definirTempo(0, 1);
         }
-
-        this.relogioAtual.passarTempo(minutos * -1, segundos * -1);
     }
 
     acabou(): boolean {
