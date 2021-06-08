@@ -4,10 +4,10 @@
 
 <p align="center">Temporizador de Cozinha ⏰, feito para <em>sua</em> cozinha</p>
 
-# 👀 Visão Geral
+## 👀 Visão Geral
 Temporizador de Cozinha (Mobile) é um temporizador múltiplo especialmente feito para usar na cozinha. Feito com tecnologia [Expo](https://expo.io/) pura.
 
-> Status: sendo aprimorado.
+> Status: 🔨 sendo aprimorado.
 
 ### 📝 Pré-requisitos
 Os seguintes requisitos são necessários para rodar o projeto:
