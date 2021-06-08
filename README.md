@@ -1,16 +1,22 @@
-# Temporizador de Cozinha (Mobile)
-Temporizador múltiplo especialmente feito para usar na cozinha. Feito com tecnologia [Expo](https://expo.io/) pura.
+<p align="center">
+  <img src="assets/images/icon.png" height="150" width="150" alt="Logo" />
+</p>
+
+<p align="center">Temporizador de Cozinha ⏰, feito para <em>sua</em> cozinha</p>
+
+# 👀 Visão Geral
+Temporizador de Cozinha (Mobile) é um temporizador múltiplo especialmente feito para usar na cozinha. Feito com tecnologia [Expo](https://expo.io/) pura.
 
 > Status: sendo aprimorado.
 
-### Pré-requisitos
+### 📝 Pré-requisitos
 Os seguintes requisitos são necessários para rodar o projeto:
 
 - Ter o [Node.js](https://nodejs.org/en/) instalado na sua máquina para rodar comando ```npm```;
 - Ter o  [Expo](https://expo.io/) instalado a nível global após a instalação do Node.js;
 - Possuir um lugar para rodar o projeto, seja seu próprio celular ou emulador;
 
-### Rodando o Projeto
+### ▶️ Rodando o Projeto
 Após cumprir todos os pré-requisitos, você deve seguir os seguintes passos no seu terminal aberto na pasta do projeto:
 ```bash
 # Instale as dependências

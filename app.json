@@ -3,14 +3,19 @@
     "name": "Temporizador de Cozinha",
     "slug": "temporizador-de-cozinha",
     "version": "1.0.0",
+    "githubUrl": "https://github.com/RodrigoBeatriz/temporizador-de-cozinha-mobile",
     "orientation": "landscape",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "cover",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#41304C"
+    },
+    "notification": {
+      "icon": "./assets/res/drawable-xxxhdpi/icon.png",
+      "color": "#993D63"
     },
     "updates": {
       "enabled": true,
@@ -27,7 +32,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#41304C"
       },
       "package": "com.rbb.temporizador_de_cozinha"
     },
