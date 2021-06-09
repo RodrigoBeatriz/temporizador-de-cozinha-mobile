@@ -4,6 +4,11 @@
 
 <p align="center">Temporizador de Cozinha ⏰, feito para <em>sua</em> cozinha</p>
 
+<p align="center">
+  <img src="https://img.shields.io/github/license/RodrigoBeatriz/temporizador-de-cozinha-mobile?label=licen%C3%A7a" alt="licença"/>
+  <img src="https://img.shields.io/github/v/release/RodrigoBeatriz/temporizador-de-cozinha-mobile" alt="release"/>
+</p>
+
 ## 👀 Visão Geral
 Temporizador de Cozinha (Mobile) é um temporizador múltiplo especialmente feito para usar na cozinha. Feito com tecnologia [Expo](https://expo.io/) pura.
 
