@@ -20,17 +20,17 @@ export default function BocaDoFogao(props: BocaDoFogaoProps) {
     let borderColor: string = '';
     switch (props.model.estado) {
         case EstadoDaBoca.INATIVADO:
-            borderColor = '#010100';
+            borderColor = '#e7e6e4';
             break;
         case EstadoDaBoca.TOCANDO:
         case EstadoDaBoca.RODANDO:
-            borderColor = '#33c7cc';
+            borderColor = '#d97f26';
             break;
         case EstadoDaBoca.PAUSADO:        
             borderColor = '#EE1533';
             break;
     }
-    let color: string = props.model.estado == EstadoDaBoca.TOCANDO ? '#EE1533' : props.selecionado ? '#33cc66' : 'white';
+    let color: string = props.model.estado == EstadoDaBoca.TOCANDO ? '#EE1533' : props.selecionado ? '#33cc66' : '#e7e6e4';
     
     return (
         <TouchableOpacity
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     button: {
         height: 150,
         width: 150,
-        backgroundColor: '#998BA5',
+        backgroundColor: '#363430',
         borderWidth: 8,
         borderRadius: 200,
         margin: 20,

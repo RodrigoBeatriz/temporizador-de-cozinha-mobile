@@ -264,26 +264,26 @@ export default function Home() {
                                 onPress={() => setMinutos(minutos <= 9 ? 0 : minutos - 10)}
                                 onLongPress={() => setMinutos(0)}
                             >
-                                <Entypo name="controller-jump-to-start" size={30} color="#993D63" />
+                                <Entypo name="controller-jump-to-start" size={30} color="#e7e6e4" />
                             </Pressable>
                             <Pressable
                                 style={[styles.button]}
                                 onPress={() => setMinutos(minutos <= 0 ? 0 : minutos - 1)}
                                 onLongPress={() => setMinutos(0)}
                             >
-                                <Entypo name="controller-fast-backward" size={30} color="#993D63" />
+                                <Entypo name="controller-fast-backward" size={30} color="#e7e6e4" />
                             </Pressable>
                             <Text style={[styles.modalText, { paddingHorizontal: 30 }]}>
                                 {(minutos < 10 ? 0 : "") + minutos.toString()}
                             </Text>
                             <Pressable style={[styles.button]} onPress={() => setMinutos(minutos + 1)}>
-                                <Entypo name="controller-fast-forward" size={30} color="#993D63" />
+                                <Entypo name="controller-fast-forward" size={30} color="#e7e6e4" />
                             </Pressable>
                             <Pressable
                                 style={[styles.button, { paddingHorizontal: 30 }]}
                                 onPress={() => setMinutos(minutos + 10)}
                             >
-                                <Entypo name="controller-next" size={30} color="#993D63" />
+                                <Entypo name="controller-next" size={30} color="#e7e6e4" />
                             </Pressable>
                         </View>
                         <Text style={[styles.modalText, { backgroundColor: "rgba(255,0,0,0)", marginLeft: 0 }]}>
@@ -295,14 +295,14 @@ export default function Home() {
                                 onPress={() => setSegundos(segundos <= 9 ? 50 : segundos - 10)}
                                 onLongPress={() => setSegundos(0)}
                             >
-                                <Entypo name="controller-jump-to-start" size={30} color="#993D63" />
+                                <Entypo name="controller-jump-to-start" size={30} color="#e7e6e4" />
                             </Pressable>
                             <Pressable
                                 style={[styles.button]}
                                 onPress={() => setSegundos(segundos <= 0 ? 59 : segundos - 1)}
                                 onLongPress={() => setSegundos(0)}
                             >
-                                <Entypo name="controller-fast-backward" size={30} color="#993D63" />
+                                <Entypo name="controller-fast-backward" size={30} color="#e7e6e4" />
                             </Pressable>
                             <Text style={[styles.modalText, { paddingHorizontal: 30 }]}>
                                 {("00" + segundos).slice(-2)}
@@ -311,13 +311,13 @@ export default function Home() {
                                 style={[styles.button]}
                                 onPress={() => setSegundos(segundos >= 59 ? 0 : segundos + 1)}
                             >
-                                <Entypo name="controller-fast-forward" size={30} color="#993D63" />
+                                <Entypo name="controller-fast-forward" size={30} color="#e7e6e4" />
                             </Pressable>
                             <Pressable
                                 style={[styles.button, { paddingHorizontal: 30 }]}
                                 onPress={() => setSegundos(segundos >= 50 ? 0 : segundos + 10)}
                             >
-                                <Entypo name="controller-next" size={30} color="#993D63" />
+                                <Entypo name="controller-next" size={30} color="#e7e6e4" />
                             </Pressable>
                         </View>
                         <Pressable style={[styles.buttonClose]} onPress={fecharModal}>
@@ -326,8 +326,9 @@ export default function Home() {
                     </View>
                 </View>
             </Modal>
+            {/* FOGÃO */}
             <View style={[styles.container, { flex: 9, height: "100%" }]}>
-                <View style={styles.linhaFogao} lightColor="#eee" darkColor="#F7E2EE">
+                <View style={styles.linhaFogao} >
                     <BocaDoFogao
                         onPress={() => handleBocaClick(0)}
                         onLongPress={() => abrirModal(0)}
@@ -341,7 +342,7 @@ export default function Home() {
                         model={bocas[1]}
                     />
                 </View>
-                <View style={styles.linhaFogao} lightColor="#eee" darkColor="#F7E2EE">
+                <View style={styles.linhaFogao} >
                     <BocaDoFogao
                         onPress={() => handleBocaClick(2)}
                         onLongPress={() => abrirModal(2)}
@@ -350,7 +351,7 @@ export default function Home() {
                         grande
                     />
                 </View>
-                <View style={styles.linhaFogao} lightColor="#eee" darkColor="#F7E2EE">
+                <View style={styles.linhaFogao}>
                     <BocaDoFogao
                         onPress={() => handleBocaClick(3)}
                         onLongPress={() => abrirModal(3)}
@@ -368,24 +369,22 @@ export default function Home() {
             <View
                 style={[
                     styles.container,
-                    { flexDirection: "column", justifyContent: "space-evenly", height: "100%", paddingVertical: 10 },
+                    { flexDirection: "column", justifyContent: "space-evenly", height: "100%", paddingVertical: 10, backgroundColor: '#363430' },
                 ]}
-                lightColor="#eee"
-                darkColor="#41304C"
             >
                 <TouchableOpacity style={[styles.button]} onPress={playPause}>
                     {bocas[bocaSelecionada].estado == EstadoDaBoca.RODANDO ||
                     bocas[bocaSelecionada].estado == EstadoDaBoca.TOCANDO ? (
-                        <Entypo name="controller-paus" size={50} color="#993D63" />
+                        <Entypo name="controller-paus" size={50} color="#e7e6e4" />
                     ) : (
-                        <Entypo name="controller-play" size={50} color="#993D63" />
+                        <Entypo name="controller-play" size={50} color="#e7e6e4" />
                     )}
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.button]} onPress={() => stop(bocaSelecionada)}>
-                    <Entypo name="controller-stop" size={50} color="#993D63" />
+                    <Entypo name="controller-stop" size={50} color="#e7e6e4" />
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.button]} onPress={() => abrirModal(bocaSelecionada)}>
-                    <MaterialIcons name="timer" size={50} color="#993D63" />
+                    <MaterialIcons name="timer" size={50} color="#e7e6e4" />
                 </TouchableOpacity>
             </View>
             <FlashMessage position="bottom" />
@@ -405,6 +404,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         height: "100%",
+        backgroundColor: '#363430'
     },
     title: {
         fontSize: 20,
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
         width: "50%",
         height: "80%",
         margin: 20,
-        backgroundColor: "white",
+        backgroundColor: "#363430",
         borderRadius: 20,
         padding: 35,
         alignItems: "center",
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#2196F3",
+        backgroundColor: "#d97f26",
     },
     centeredView: {
         flex: 1,
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     modalText: {
-        color: "black",
+        color: "#e7e6e4",
         fontSize: 24,
         textAlign: "center",
     },
